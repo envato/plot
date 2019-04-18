@@ -370,19 +370,23 @@ func (a verticalAxis) GlyphBoxes(*Plot) []GlyphBox {
 
 // DefaultTicks is suitable for the Tick.Marker field of an Axis,
 // it returns a reasonable default set of tick marks.
-type DefaultTicks struct{}
+type DefaultTicks struct{
+	SuggestedTicks int
+}
 
 var _ Ticker = DefaultTicks{}
 
 // Ticks returns Ticks in the specified range.
-func (DefaultTicks) Ticks(min, max float64) []Tick {
+func (d DefaultTicks) Ticks(min, max float64) []Tick {
 	if max <= min {
 		panic("illegal range")
 	}
 
-	const suggestedTicks = 3
+	if d.SuggestedTicks == 0 {
+		d.SuggestedTicks = 3
+	}
 
-	labels, step, q, mag := talbotLinHanrahan(min, max, suggestedTicks, withinData, nil, nil, nil)
+	labels, step, q, mag := talbotLinHanrahan(min, max, d.SuggestedTicks, withinData, nil, nil, nil)
 	majorDelta := step * math.Pow10(mag)
 	if q == 0 {
 		// Simple fall back was chosen, so
